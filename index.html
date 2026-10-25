@@ -1,35 +1,136 @@
-<!doctype html>
-<html lang="en">
+
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🌐 Static Website Demo</title>
-  <link rel="stylesheet" href="style.css" />
-  <meta name="description" content="A simple static website deployed on Cloudflare Pages from GitHub." />
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>Leomark 前后端交互测试</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0e0f20;
+      color: white;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .card {
+      width: 90%;
+      max-width: 480px;
+      padding: 36px;
+      text-align: center;
+      border: 1px solid #33364b;
+      border-radius: 18px;
+      background: #1a1b30;
+    }
+
+    h1 { color: #ffad33; }
+    p { color: #aeb3c7; }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 18px 0;
+      border: 1px solid #44465a;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      background: #ffad33;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    #result {
+      margin-top: 24px;
+      padding: 16px;
+      background: #101124;
+      border-radius: 8px;
+      color: #72e0af;
+      min-height: 54px;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Hello Leomark! 我的第一个 Cloudflare 网站  👋</h1>
-    <p>Deployed with <strong>Cloudflare Pages</strong></p>
-  </header>
 
-  <main>
-    <p>
-      This is a lightweight static website example.<br>
-      Edit the files, push to your repository, and watch it deploy automatically on Cloudflare Pages.
-    </p>
+  <div class="card">
+    <h1>Leomark API 测试</h1>
+    <p>Cloudflare Pages + Workers</p>
 
-    <p>
-      <a href="https://github.com/dilatchi" target="_blank" class="btn">View on GitHub</a>
-    </p>
-  </main>
+    <form id="helloForm">
+      <input
+        type="text"
+        id="nameInput"
+        placeholder="请输入你的名字"
+        maxlength="50"
+        required
+      >
+      <button id="submitBtn" type="submit">
+        发送请求
+      </button>
+    </form>
 
-  <footer>
-    <p>🚀 Built and deployed by <strong>Dilatchi</strong> using Cloudflare Pages</p>
-    <p>
-      <a href="https://pages.cloudflare.com" target="_blank">Learn more</a>
-    </p>
-  </footer>
+    <div id="result" role="status">
+      等待输入...
+    </div>
+  </div>
+
+  <script>
+    const API =
+      "https://hello-ai.mark078185.workers.dev/";
+
+    const form = document.getElementById("helloForm");
+    const input = document.getElementById("nameInput");
+    const result = document.getElementById("result");
+    const button = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const name = input.value.trim();
+      if (!name) return;
+
+      button.disabled = true;
+      result.textContent = "正在请求 Worker...";
+
+      try {
+        const response = await fetch(
+          API + "?name=" + encodeURIComponent(name)
+        );
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+        result.textContent = data.message;
+
+      } catch (error) {
+        result.textContent =
+          "请求失败，请检查 Worker 或 CORS 设置";
+        console.error(error);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
 
 </body>
 </html>
